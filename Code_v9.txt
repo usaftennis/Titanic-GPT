@@ -1,0 +1,17 @@
+# Create a stacking classifier
+stacking_model = StackingClassifier(estimators=models, final_estimator=LogisticRegression(), cv=5)
+
+# Train the model
+stacking_model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = stacking_model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_stacking_advanced.csv', index=False)
