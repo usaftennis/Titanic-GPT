@@ -1,0 +1,54 @@
+# Re-import the original data
+data = pd.read_csv('/mnt/data/train.csv')
+
+# Extract the title from the Name feature
+data['Title'] = data['Name'].apply(lambda x: x.split(',')[1].split('.')[0].strip())
+
+# Map the less frequent titles to 'Other'
+title_names = (data['Title'].value_counts() < 10)
+data['Title'] = data['Title'].apply(lambda x: 'Other' if title_names.loc[x] == True else x)
+
+# Preprocess the data as before
+data = data.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
+data['Age'] = data['Age'].fillna(data['Age'].median())
+data['Embarked'] = data['Embarked'].fillna(data['Embarked'].mode()[0])
+data['Sex'] = label_encoder.fit_transform(data['Sex'])
+data['Embarked'] = label_encoder.fit_transform(data['Embarked'])
+
+# Encode the Title feature
+data['Title'] = label_encoder.fit_transform(data['Title'])
+
+# Apply the same transformations to the test data
+test_data = pd.read_csv('/mnt/data/test.csv')
+test_data['Title'] = test_data['Name'].apply(lambda x: x.split(',')[1].split('.')[0].strip())
+title_names_test = (test_data['Title'].value_counts() < 10)
+test_data['Title'] = test_data['Title'].apply(lambda x: 'Other' if title_names_test.loc[x] == True else x)
+test_data = test_data.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
+test_data['Age'] = test_data['Age'].fillna(test_data['Age'].median())
+test_data['Fare'] = test_data['Fare'].fillna(test_data['Fare'].median())
+test_data['Embarked'] = test_data['Embarked'].fillna(test_data['Embarked'].mode()[0])
+test_data['Sex'] = label_encoder.fit_transform(test_data['Sex'])
+test_data['Embarked'] = label_encoder.fit_transform(test_data['Embarked'])
+test_data['Title'] = label_encoder.fit_transform(test_data['Title'])
+
+# Split data into features (X) and target (y)
+X = data.drop('Survived', axis=1)
+y = data['Survived']
+
+# Create a new random forest classifier with the best parameters
+model = RandomForestClassifier(**best_params, random_state=42)
+
+# Train the model
+model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_title.csv', index=False)
