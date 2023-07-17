@@ -1,0 +1,28 @@
+from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score
+
+# Define the base models
+models = [
+    ('random_forest', RandomForestClassifier(**best_params, random_state=42)),
+    ('gradient_boosting', GradientBoostingClassifier(random_state=42)),
+    ('xgboost', XGBClassifier(**best_params_xgb, learning_rate=0.02, n_estimators=600, 
+                              objective='binary:logistic', silent=True, nthread=1, random_state=42))
+]
+
+# Create a voting classifier
+voting_model = VotingClassifier(estimators=models, voting='hard')
+
+# Train the model
+voting_model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = voting_model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_voting.csv', index=False)
