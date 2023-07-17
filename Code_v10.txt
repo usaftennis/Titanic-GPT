@@ -1,0 +1,19 @@
+# Create a stacking classifier with balanced class weights
+stacking_model = StackingClassifier(estimators=models, 
+                                    final_estimator=LogisticRegression(class_weight='balanced'), 
+                                    cv=5)
+
+# Train the model
+stacking_model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = stacking_model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_class_weight.csv', index=False)
