@@ -1,0 +1,28 @@
+# A parameter grid for XGBoost
+params = {
+    'min_child_weight': [1, 5, 10],
+    'gamma': [0.5, 1, 1.5, 2, 5],
+    'subsample': [0.6, 0.8, 1.0],
+    'colsample_bytree': [0.6, 0.8, 1.0],
+    'max_depth': [3, 4, 5],
+    'learning_rate': [0.01, 0.02, 0.05, 0.1],
+    'n_estimators': [100, 200, 500, 1000]
+}
+
+xgb = XGBClassifier(objective='binary:logistic', silent=True, nthread=1)
+
+folds = 3
+param_comb = 10
+
+skf = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+
+random_search = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, 
+                                   scoring='accuracy', n_jobs=-1, cv=skf.split(X, y), 
+                                   verbose=3, random_state=42)
+
+# Perform the random search
+random_search.fit(X, y)
+
+# Get the best parameters
+best_params_xgb_advanced = random_search.best_params_
+best_params_xgb_advanced
