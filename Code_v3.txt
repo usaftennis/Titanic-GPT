@@ -1,0 +1,40 @@
+from sklearn.model_selection import GridSearchCV
+
+# Define the hyperparameters and their values
+param_grid = {
+    'n_estimators': [100, 200, 500],
+    'max_depth': [None, 5, 10, 15],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+
+# Create a base model
+rf = RandomForestClassifier(random_state=42)
+
+# Instantiate the grid search model
+grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=3, n_jobs=-1, verbose=2)
+
+# Fit the grid search to the data
+grid_search.fit(X, y)
+
+# Get the best parameters
+best_params = grid_search.best_params_
+best_params
+
+# Create a new random forest classifier with the best parameters
+model = RandomForestClassifier(**best_params, random_state=42)
+
+# Train the model
+model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_hyperparameter_tuning.csv', index=False)

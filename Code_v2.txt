@@ -1,0 +1,33 @@
+# Create new features in the training data
+data['FamilySize'] = data['SibSp'] + data['Parch'] + 1
+data['IsAlone'] = 1
+data['IsAlone'].loc[data['FamilySize'] > 1] = 0
+data['FarePerPerson'] = data['Fare'] / data['FamilySize']
+
+# Create new features in the test data
+test_data['FamilySize'] = test_data['SibSp'] + test_data['Parch'] + 1
+test_data['IsAlone'] = 1
+test_data['IsAlone'].loc[test_data['FamilySize'] > 1] = 0
+test_data['FarePerPerson'] = test_data['Fare'] / test_data['FamilySize']
+
+# Split data into features (X) and target (y)
+X = data.drop('Survived', axis=1)
+y = data['Survived']
+
+# Create a new random forest classifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the model
+model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_feature_engineering.csv', index=False)
