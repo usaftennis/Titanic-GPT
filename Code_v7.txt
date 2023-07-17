@@ -1,0 +1,51 @@
+from xgboost import XGBClassifier
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import RandomizedSearchCV
+import numpy as np
+
+# A parameter grid for XGBoost
+params = {
+    'min_child_weight': [1, 5, 10],
+    'gamma': [0.5, 1, 1.5, 2, 5],
+    'subsample': [0.6, 0.8, 1.0],
+    'colsample_bytree': [0.6, 0.8, 1.0],
+    'max_depth': [3, 4, 5]
+}
+
+xgb = XGBClassifier(learning_rate=0.02, n_estimators=600, objective='binary:logistic',
+                    silent=True, nthread=1)
+
+folds = 5
+param_comb = 5
+
+skf = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+
+random_search = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, 
+                                   scoring='accuracy', n_jobs=-1, cv=skf.split(X, y), 
+                                   verbose=3, random_state=42)
+
+# Perform the random search
+random_search.fit(X, y)
+
+# Get the best parameters
+best_params_xgb = random_search.best_params_
+best_params_xgb
+
+# Create a new XGBoost classifier with the best parameters
+xgb_model = XGBClassifier(**best_params_xgb, learning_rate=0.02, n_estimators=600, 
+                          objective='binary:logistic', silent=True, nthread=1, random_state=42)
+
+# Train the model
+xgb_model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = xgb_model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_xgboost.csv', index=False)
