@@ -1,0 +1,19 @@
+from sklearn.ensemble import GradientBoostingClassifier
+
+# Create a Gradient Boosting Classifier
+gb_model = GradientBoostingClassifier(random_state=42)
+
+# Train the model
+gb_model.fit(X, y)
+
+# Make predictions on the test data
+test_predictions = gb_model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+# Save the submission dataframe to a CSV file
+submission.to_csv('/mnt/data/titanic_predictions_gradient_boosting.csv', index=False)
