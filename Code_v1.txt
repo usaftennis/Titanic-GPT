@@ -1,0 +1,57 @@
+# Load the data again
+data = pd.read_csv('/mnt/data/train.csv')
+
+# Display the first few rows of the data
+data.head()
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Split data into features (X) and target (y)
+X = data.drop('Survived', axis=1)
+y = data['Survived']
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a random forest classifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Make predictions on the testing set
+y_pred = model.predict(X_test)
+
+# Calculate the accuracy of the model
+accuracy = accuracy_score(y_test, y_pred)
+accuracy
+
+# Load the test data
+test_data = pd.read_csv('/mnt/data/test.csv')
+
+# Save PassengerId for final submission
+passenger_id = test_data['PassengerId']
+
+# Preprocess the test data
+test_data = test_data.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
+test_data['Age'] = test_data['Age'].fillna(test_data['Age'].median())
+test_data['Fare'] = test_data['Fare'].fillna(test_data['Fare'].median())
+test_data['Embarked'] = test_data['Embarked'].fillna(test_data['Embarked'].mode()[0])
+test_data['Sex'] = label_encoder.fit_transform(test_data['Sex'])
+test_data['Embarked'] = label_encoder.fit_transform(test_data['Embarked'])
+
+# Ensure data preprocessing was done correctly
+test_data.head()
+
+# Make predictions on the test data
+test_predictions = model.predict(test_data)
+
+# Create a DataFrame for submission
+submission = pd.DataFrame({
+    "PassengerId": passenger_id,
+    "Survived": test_predictions
+})
+
+submission.head()
